@@ -1,3 +1,3 @@
-module golang_util
+module github.com/yanjianyu-nwpu/golang_util
 
 go 1.18
