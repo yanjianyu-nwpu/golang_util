@@ -1,36 +1,30 @@
 package skiplist
 
-import "fmt"
-
-func (s *SkipList) search(key string) (*Node , error) {
+func (s *SkipList) search(key string) (*Node, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	nowPtr := s.Head
-	nowLevel := s.MaxLevel
 
-	for nowLevel >= 0 {
-		if nowPtr == s.Tail {
-			break
-		}
+	for nowLevel := s.MaxLevel; nowLevel >= 0; nowLevel-- {
+		for nowPtr != s.Tail && nowPtr != nil && nowPtr.nextPtr[nowLevel] != s.Tail {
+			if nowPtr == nil {
+				return nil, NoFound
+			}
 
-		if len(nowPtr.nextPtr) <= nowLevel {
-			nowLevel--
-			continue
-		}
+			if nowPtr != s.Head && nowPtr.key == key {
+				return nowPtr, nil
+			}
 
-		nextPtr := nowPtr.nextPtr[nowLevel]
-		if nextPtr == s.Tail || nextPtr.key > key{
-			nowLevel--
-			continue
-		}
-		
-		if nextPtr.key == key{
-			return nextPtr,nil
-		}
+			nextPtr := nowPtr.nextPtr[nowLevel]
+			if nextPtr == s.Tail || nextPtr.key > key {
+				nowLevel--
+				break
+			}
 
-		nowPtr = nextPtr
+			nowPtr = nextPtr
+		}
 	}
 
-	return nil, fmt.Errorf("no such key")
+	return nil, NoFound
 }
